@@ -4,6 +4,16 @@
       "name": "Matheus",
       "email": "fukuyama.shinji@ifsp.edu.br",
       "id": 1
+    },
+    {
+      "name": "Ana Oliveira",
+      "email": "anaOliveira@empresa.com",
+      "id": 2
+    },
+    {
+      "name": "Marcus",
+      "email": "marc@empresa.com",
+      "id": 3
     }
   ]
 }

@@ -11,16 +11,19 @@ const headerProps = {
 const baseUrl = 'http://localhost:3001/users'
 const inicialState = {
     user: { name: '', email: '' },
-    list: []
+    list: [],
+    search: ''
 }
 
 export default class UserCrud extends Component {
     
     state = {...inicialState}
+    completedList = []
 
-    UNSAFE_componentWillMount() {
+    componentWillMount() {
         axios(baseUrl).then ( resp => {
             this.setState({list: resp.data})
+            this.completedList = resp.data
         })
     }
 
@@ -36,19 +39,38 @@ export default class UserCrud extends Component {
             .then(resp => {
                 const list = this.getUpdatedList(resp.data)
                 this.setState({user: inicialState.user, list})
+                this.completedList = list
             })
     }
 
-    getUpdatedList(user, add=true) {
-        const list = this.state.list.filter(u => u.id !== user.id)
-        if(add) list.unshift(user)
+    getUpdatedList(user, add=true, search=false) {
+        let list
+        if(search)
+            list = this.completedList.filter(u => 
+                u.name.indexOf(this.state.search) == 0
+            )
+        else{
+            list = this.state.list.filter(u => u.id !== user.id)
+            if(add) list.unshift(user)
+        }
         return list
     }
 
-    updateField(event) {
-        const user = {...this.state.user}
-        user[event.target.name] = event.target.value
-        this.setState({ user })
+    async updateField(event, isSearch=false) {
+        let list
+        if(!isSearch){
+            const user = {...this.state.user}
+            user[event.target.name] = event.target.value
+            this.setState({ user })
+        } else {
+            await this.setState({ search: event.target.value })
+            if(event.target.value == '')
+                list = this.completedList
+            else
+                list = this.getUpdatedList(null, false, true)
+            this.setState({ list })
+        }
+    
     }
     
     renderForm() {
@@ -77,7 +99,6 @@ export default class UserCrud extends Component {
                     </div>
                 </div>
 
-                <hr />
                 <div className="row">
                     <div className="col-12 d-flex justify-content-end">
                         <button className="btn btn-primary"
@@ -150,10 +171,23 @@ export default class UserCrud extends Component {
         })
     }
 
+    renderSearch() {
+        return (
+            <input type="text" 
+            name="search" 
+            value={this.state.search}
+            onChange={e => this.updateField(e, true)}
+            placeholder="Procure pelo nome..."
+            className="col-12 col-md-6"/>   
+        )
+    }
+
     render() {
         return (
             <Main {...headerProps}>
                 {this.renderForm()}
+                <hr />
+                {this.renderSearch()}
                 {this.renderTable()}
             </Main>
         )
